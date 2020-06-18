@@ -20,6 +20,7 @@ using mem_t = std::array<unsigned char, 4096>;
 using stack_t = std::array<unsigned char, 16>;
 using display_t = std::array<unsigned char, 64*32>;
 using keys_t = std::array<bool, 16>;
+using OpcodeTable = std::array<void(*)(cpu_t&, mem_t&, stack_t&, display_t&, keys_t&), 35>;
 
 class chip8 {
     public:
@@ -46,6 +47,8 @@ class chip8 {
         stack_t stack;
         display_t display;
         keys_t keys;
+        OpcodeTable op;
+
 };
 
 #endif
