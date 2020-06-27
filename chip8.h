@@ -12,6 +12,7 @@
 
 #include "cpu.h"
 #include "opcode.h"
+#include "display/Display.h"
 
 #ifndef __chip_8
 #define __chip_8
@@ -37,6 +38,11 @@ class chip8 {
          */
         void run();
 
+        /**
+         * Quit SDL
+         */
+        ~chip8();
+
     private:
         void initDisplay();
         void loadProgram(std::string &programPath);
@@ -48,7 +54,7 @@ class chip8 {
         display_t display;
         keys_t keys;
         OpcodeTable op;
-
+        Display window;
 };
 
 #endif

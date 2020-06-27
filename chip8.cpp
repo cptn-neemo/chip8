@@ -8,6 +8,8 @@ chip8::chip8(std::string programPath) {
     run();
 }
 
+chip8::~chip8() { SDL_Quit(); }
+
 void chip8::initDisplay() {
     display.fill(0);
 }
@@ -32,7 +34,6 @@ void chip8::loadProgram(std::string &programPath) {
         mem[memaddr++] = byte;
     }
 
-    std::cout << std::hex << (int) mem[0x0200] << "-" << std::hex << mem[0x0201] << std::endl;
     std::cout << "Successfully loaded program." << std::endl;
 }
 
