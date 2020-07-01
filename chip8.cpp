@@ -1,8 +1,8 @@
 #include "chip8.h"
 
 chip8::chip8(std::string programPath) {
-    mem.fill(0);
-    stack.fill(0);
+    sysInfo.mem.fill(0);
+    sysInfo.stack.fill(0);
     initDisplay();
     loadProgram(programPath);
     run();
@@ -11,7 +11,7 @@ chip8::chip8(std::string programPath) {
 chip8::~chip8() { SDL_Quit(); }
 
 void chip8::initDisplay() {
-    display.fill(0);
+    sysInfo.display.fill(0);
 }
 
 void chip8::loadProgram(std::string &programPath) {
@@ -31,14 +31,14 @@ void chip8::loadProgram(std::string &programPath) {
 
     while (!fs.eof()) {
         fs.read((char*) &byte, 1);
-        mem[memaddr++] = byte;
+        sysInfo.mem[memaddr++] = byte;
     }
 
     std::cout << "Successfully loaded program." << std::endl;
 }
 
 unsigned short chip8::fetchOpcode(unsigned int memaddr) {
-    return (mem[memaddr] << 8) | mem[memaddr + 1];
+    return (sysInfo.mem[memaddr] << 8) | sysInfo.mem[memaddr + 1];
 }
 
 void chip8::run() {

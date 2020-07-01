@@ -1,20 +1,25 @@
 CC = g++
 FLAGS = -Wall -Werror -g
 SDL = `sdl2-config --cflags --libs`
+OPCODE_DIR = opcode/
+TEST_DIR = tests/
 
-
-target: chip8.h chip8.cpp opcode.o Display.o SDLPointer.o
-	$(CC) -o build/chip8 chip8.h chip8.cpp build/opcode.o build/Display.o build/SDLPointer.o $(FLAGS) $(SDL)
-opcode.o : opcode.h opcode.cpp
-	$(CC) -o build/opcode.o -c opcode.cpp $(SDL)
+target: chip8.h chip8.cpp OpcodeTable.o Display.o SDLPointer.o build/*.o
+	$(MAKE) -C $(OPCODE_DIR)
+	$(CC) -o build/chip8 chip8.h chip8.cpp build/*.o  $(FLAGS) $(SDL)
+OpcodeTable.o : OpcodeTable.h OpcodeTable.cpp
+	$(CC) -o build/OpcodeTable.o -c OpcodeTable.cpp $(SDL) $(FLAGS)
 Display.o : display/Display.h display/Display.cpp
-	$(CC) -o build/Display.o -c display/Display.cpp $(SDL)
-
+	$(CC) -o build/Display.o -c display/Display.cpp $(SDL) $(FLAGS)
 SDLPointer.o : display/SDLPointer.h display/SDLPointer.cpp
-	$(CC) -o build/SDLPointer.o -c display/SDLPointer.cpp $(SDL)
+	$(CC) -o build/SDLPointer.o -c display/SDLPointer.cpp $(SDL) $(FLAGS)
 
-make run: target
+run: target
 	build/chip8
 clean: 
 	rm -f *.o
 	rm chip8
+
+test: target
+	$(MAKE) -C $(TEST_DIR)
+	tests/tests

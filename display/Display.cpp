@@ -12,7 +12,7 @@ Display::~Display() {
 
 void Display::initializeSDL() {
     int sdlInitCode = SDL_Init(SDL_INIT_VIDEO);
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (sdlInitCode != 0) {
         std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
         std::exit(1);
     }
