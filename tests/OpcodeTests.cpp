@@ -31,7 +31,6 @@ TEST_CASE("Call Machine Code", "[CallMachineCode]") {
     try {
         table.executeOpcode(callMachineCode);
     } catch (...) {
-        std::cout << "Successfully caught the exception." << std::endl;
     }
 }
 
@@ -294,4 +293,105 @@ TEST_CASE("Right shift", "[rightShift]") {
         REQUIRE( sysInfo.cpu.v[0] == 0x4 );
         REQUIRE( sysInfo.cpu.v[15] == 0 );
     }
+}
+
+TEST_CASE("Subtract Opposite", "[subn]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0x8017;
+
+    SECTION("VF set") {
+        sysInfo.cpu.v[0] = 0x2;
+        sysInfo.cpu.v[1] = 0x8;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0x6 );
+        REQUIRE( sysInfo.cpu.v[15] == 0x1 );
+    }
+
+    SECTION("VF cleared") {
+        sysInfo.cpu.v[0] = 0x5;
+        sysInfo.cpu.v[1] = 0x3;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0xFE );
+        REQUIRE( sysInfo.cpu.v[15] == 0x0 );
+    }
+}
+
+TEST_CASE("Left Shift", "[shiftLeft]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0x801E;
+
+    SECTION("VF set") {
+        sysInfo.cpu.v[0] = 0x80;
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0x0 );
+        REQUIRE( sysInfo.cpu.v[15] == 0x1 );
+    }
+
+    SECTION("VF clear") {
+        sysInfo.cpu.v[0] = 0x01;
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0x2 );
+        REQUIRE( sysInfo.cpu.v[15] == 0x0 );
+    }
+}
+
+TEST_CASE("Skip if registers not equal", "[skipRNEQ]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0x9010;
+    sysInfo.cpu.ip = 0x200;
+
+    SECTION("Should skip") {
+        sysInfo.cpu.v[0] = 0x0;
+        sysInfo.cpu.v[1] = 0x1;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.ip == 0x202 );
+    }
+
+    SECTION("Should not skip") {
+        sysInfo.cpu.v[0] = 0x1;
+        sysInfo.cpu.v[1] = 0x1;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.ip == 0x200 );
+    }
+}
+
+TEST_CASE("set I", "[setI]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0xA123;
+    sysInfo.cpu.I = 0x987;
+
+    table.executeOpcode(command);
+    
+    REQUIRE( sysInfo.cpu.I == 0x123 );
+}
+
+TEST_CASE("Jump to location with offset", "[jumpOffset]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0xB123;
+    sysInfo.cpu.ip = 0x200;
+    sysInfo.cpu.v[0] = 0x32;
+
+    table.executeOpcode(command);
+
+    REQUIRE( sysInfo.cpu.ip == 0x155 );
 }

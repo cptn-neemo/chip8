@@ -30,7 +30,6 @@ class OpcodeTable {
         void skipIfRegisterEqualToConstant(OPCODE);
         void skipIfRegisterNotEqualToConstant(OPCODE);
         void skipIfRegistersEqual(OPCODE);
-        void skipIfRegistersNotEqual(OPCODE);
         void setRegisterToConstant(OPCODE);
         void addConstantToRegister(OPCODE);
         void set(OPCODE);
@@ -39,6 +38,12 @@ class OpcodeTable {
         void binaryXOR(OPCODE);
         void add(OPCODE);
         void subtract(OPCODE);
+        void shiftRight(OPCODE);
+        void subtractn(OPCODE);
+        void shiftLeft(OPCODE);
+        void skipIfRegistersNotEqual(OPCODE);
+        void setI(OPCODE);
+        void jumpWithOffset(OPCODE);
 
         void skipNextInstructionIf(bool);
         void setRegister(unsigned char registerIndex, OPCODE value);

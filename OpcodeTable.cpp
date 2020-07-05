@@ -25,6 +25,12 @@ void OpcodeTable::setupTable() {
     table[13] = &OpcodeTable::binaryXOR;
     table[14] = &OpcodeTable::add;
     table[15] = &OpcodeTable::subtract;
+    table[16] = &OpcodeTable::shiftRight;
+    table[17] = &OpcodeTable::subtractn;
+    table[18] = &OpcodeTable::shiftLeft;
+    table[19] = &OpcodeTable::skipIfRegistersNotEqual;
+    table[20] = &OpcodeTable::setI;
+    table[21] = &OpcodeTable::jumpWithOffset;
 }
 
 void OpcodeTable::executeOpcode(OPCODE command) {
@@ -53,6 +59,12 @@ unsigned int OpcodeTable::getOpcodeTableIndex(OPCODE command) {
             return 9;
         case 0x8:
             return get8thOpcodeTableIndex(command);
+        case 0x9:
+            return 19;
+        case 0xA:
+            return 20;
+        case 0xB:
+            return 21;
         default:
             throw std::out_of_range("Opcode index did not match any possibility.");
     }
@@ -184,6 +196,60 @@ void OpcodeTable::subtract(OPCODE command) {
         bop.clearVF();
     }
     bop.setXRegisterTo(bop.getXValue() - bop.getYValue());
+}
+
+void OpcodeTable::shiftRight(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+
+    if (bop.getXValue() & 0x1) {
+        bop.setVF();
+    } else {
+        bop.clearVF();
+    }
+    bop.setXRegisterTo(bop.getXValue() >> 1);
+}
+
+void OpcodeTable::subtractn(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+
+    if (bop.getYValue() > bop.getXValue()) {
+        bop.setVF();
+    } else {
+        bop.clearVF();
+    }
+
+    bop.setXRegisterTo(bop.getYValue() - bop.getXValue());
+}
+
+void OpcodeTable::shiftLeft(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+
+    if (bop.getXValue() & 0x80) {
+        bop.setVF();
+    } else {
+        bop.clearVF();
+    }
+    bop.setXRegisterTo(bop.getXValue() << 1);
+}
+
+void OpcodeTable::skipIfRegistersNotEqual(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+
+    if (bop.getXValue() != bop.getYValue()) {
+        sysInfo->cpu.ip += 2;
+    }
+}
+
+void OpcodeTable::setI(OPCODE command) {
+    OPCODE nnn = Opcode::getLastNQuadbits(command, 3);
+    sysInfo->cpu.I = nnn;
+}
+
+void OpcodeTable::jumpWithOffset(OPCODE command) {
+    OPCODE startAddress = sysInfo->cpu.v[0];
+    OPCODE offset = Opcode::getLastNQuadbits(command, 3);
+
+    sysInfo->cpu.ip = startAddress + offset;
 }
 
 void OpcodeTable::setRegister(unsigned char registerIndex, OPCODE value) {
