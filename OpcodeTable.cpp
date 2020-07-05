@@ -1,5 +1,9 @@
 #include "OpcodeTable.h"
 
+unsigned char max(unsigned char x, unsigned char y) {
+    return x > y ? x : y;
+}
+
 OpcodeTable::OpcodeTable(SystemInformation *sysInfo) : sysInfo(sysInfo) {
     setupTable();
 }
@@ -19,8 +23,8 @@ void OpcodeTable::setupTable() {
     table[11] = &OpcodeTable::binaryOr;
     table[12] = &OpcodeTable::binaryAnd;
     table[13] = &OpcodeTable::binaryXOR;
-    //table[14] = &OpcodeTable::add;
-    //table[15] = &OpcodeTable::add;
+    table[14] = &OpcodeTable::add;
+    table[15] = &OpcodeTable::subtract;
 }
 
 void OpcodeTable::executeOpcode(OPCODE command) {
@@ -116,12 +120,8 @@ void OpcodeTable::skipIfRegisterNotEqualToConstant(OPCODE command) {
 }
 
 void OpcodeTable::skipIfRegistersEqual(OPCODE command) {
-    unsigned short xValue = 
-        sysInfo->cpu.v[Opcode::getXRegister(command)];
-    unsigned short yValue = 
-        sysInfo->cpu.v[Opcode::getYRegister(command)];
-
-    skipNextInstructionIf(xValue == yValue);
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    skipNextInstructionIf(bop.getXValue() == bop.getYValue());
 }
 
 void OpcodeTable::skipNextInstructionIf(bool condition) {
@@ -144,33 +144,46 @@ void OpcodeTable::addConstantToRegister(OPCODE command) {
 }
 
 void OpcodeTable::set(OPCODE command) {
-    unsigned char xRegisterIndex = Opcode::getXRegister(command);
-    OPCODE yValue = sysInfo->cpu.v[Opcode::getYRegister(command)];
-    setRegister(xRegisterIndex, yValue);
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    bop.setXRegisterTo(bop.getYValue());
 }
 
 void OpcodeTable::binaryOr(OPCODE command) {
-    unsigned char xRegisterIndex = Opcode::getXRegister(command);
-    OPCODE xValue = sysInfo->cpu.v[xRegisterIndex];
-    OPCODE yValue = sysInfo->cpu.v[Opcode::getYRegister(command)];
-
-    setRegister(xRegisterIndex, xValue | yValue);
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    bop.setXRegisterTo(bop.getXValue() | bop.getYValue());
 }
 
 void OpcodeTable::binaryAnd(OPCODE command) {
-    unsigned char xRegisterIndex = Opcode::getXRegister(command);
-    OPCODE xValue = sysInfo->cpu.v[xRegisterIndex];
-    OPCODE yValue = sysInfo->cpu.v[Opcode::getYRegister(command)];
-
-    setRegister(xRegisterIndex, xValue & yValue);
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    bop.setXRegisterTo(bop.getXValue() & bop.getYValue());
 }
 
 void OpcodeTable::binaryXOR(OPCODE command) {
-    unsigned char xRegisterIndex = Opcode::getXRegister(command);
-    OPCODE xValue = sysInfo->cpu.v[xRegisterIndex];
-    OPCODE yValue = sysInfo->cpu.v[Opcode::getYRegister(command)];
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    bop.setXRegisterTo(bop.getXValue() ^ bop.getYValue());
+}
 
-    setRegister(xRegisterIndex, xValue ^ yValue);
+void OpcodeTable::add(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+
+    unsigned char sum = bop.getXValue() + bop.getYValue();
+    if (sum < max(bop.getXValue(), bop.getYValue())) {
+        bop.setVF();
+    } else {
+        bop.clearVF();
+    }
+
+    bop.setXRegisterTo(bop.getXValue() + bop.getYValue());
+}
+
+void OpcodeTable::subtract(OPCODE command) {
+    BinaryOperation bop(sysInfo->cpu.v, command);
+    if (bop.getXValue() < bop.getYValue()) {
+        bop.setVF();
+    } else {
+        bop.clearVF();
+    }
+    bop.setXRegisterTo(bop.getXValue() - bop.getYValue());
 }
 
 void OpcodeTable::setRegister(unsigned char registerIndex, OPCODE value) {

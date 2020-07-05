@@ -1,4 +1,5 @@
 #include <array>
+#include "types.h"
 
 #ifndef __cpu_h
 #define __cpu_h
@@ -8,7 +9,7 @@ struct cpu_t {
     cpu_t() { v.fill(0); }
 
     // Registers
-    std::array<unsigned char, 16> v;
+    Registers v;
     unsigned short I{0};
 
     // Timers

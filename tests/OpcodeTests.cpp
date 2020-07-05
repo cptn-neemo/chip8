@@ -181,7 +181,6 @@ TEST_CASE("Set register value from register", "[setRegisterFromRegister]") {
     OpcodeTable table(&sysInfo);
     sysInfo.cpu.v[1] = 0x12;
 
-    // 7XNN
     const OPCODE command = 0x8010;
     table.executeOpcode(command);
     REQUIRE( sysInfo.cpu.v[0] == 0x12 );
@@ -193,7 +192,6 @@ TEST_CASE("Or", "[or]") {
     sysInfo.cpu.v[0] = 0x01;
     sysInfo.cpu.v[1] = 0x10;
 
-    // 7XNN
     const OPCODE command = 0x8011;
     table.executeOpcode(command);
     REQUIRE( sysInfo.cpu.v[0] == 0x11 );
@@ -205,7 +203,6 @@ TEST_CASE("And", "[and]") {
     sysInfo.cpu.v[0] = 0x01;
     sysInfo.cpu.v[1] = 0x10;
 
-    // 7XNN
     const OPCODE command = 0x8012;
     table.executeOpcode(command);
     REQUIRE( sysInfo.cpu.v[0] == 0x0 );
@@ -217,8 +214,84 @@ TEST_CASE("Xor", "[xor]") {
     sysInfo.cpu.v[0] = 0x10;
     sysInfo.cpu.v[1] = 0x11;
 
-    // 7XNN
     const OPCODE command = 0x8013;
     table.executeOpcode(command);
     REQUIRE( sysInfo.cpu.v[0] == 0x01 );
+}
+
+TEST_CASE("Add", "add") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    SECTION("No carry") {
+        sysInfo.cpu.v[0] = 0x3;
+        sysInfo.cpu.v[1] = 0x10;
+
+        const OPCODE command = 0x8014;
+        table.executeOpcode(command);
+        
+        REQUIRE( sysInfo.cpu.v[0] == 0x13 );
+        REQUIRE( sysInfo.cpu.v[15] == 0 );
+    }
+
+    SECTION("Carry") {
+        sysInfo.cpu.v[0] = 0xFF;
+        sysInfo.cpu.v[1] = 0xFF;
+
+        const OPCODE command = 0x8014;
+        table.executeOpcode(command);
+        
+        REQUIRE( sysInfo.cpu.v[0] == 0xFE );
+        REQUIRE( sysInfo.cpu.v[15] == 1 );
+    }
+}
+
+TEST_CASE("Subtract", "subtract") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    SECTION("No carry") {
+        sysInfo.cpu.v[0] = 0x8;
+        sysInfo.cpu.v[1] = 0x3;
+
+        const OPCODE command = 0x8015;
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0x5 );
+        REQUIRE( sysInfo.cpu.v[15] == 0 );
+    }
+
+    SECTION("Carry") {
+        sysInfo.cpu.v[0] = 0x3;
+        sysInfo.cpu.v[1] = 0x5;
+
+        const OPCODE command = 0x8015;
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.v[0] == 0xFE );
+        REQUIRE( sysInfo.cpu.v[15] == 1 );
+    }
+}
+
+TEST_CASE("Right shift", "[rightShift]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0x8016;
+
+    SECTION("1 first bit") {
+        sysInfo.cpu.v[0] = 0xF;
+        table.executeOpcode(command);
+        
+        REQUIRE( sysInfo.cpu.v[0] == 0x7 );
+        REQUIRE( sysInfo.cpu.v[15] == 1 );
+    }
+
+    SECTION("0 first bit") {
+        sysInfo.cpu.v[0] = 0x8;
+        table.executeOpcode(command);
+        
+        REQUIRE( sysInfo.cpu.v[0] == 0x4 );
+        REQUIRE( sysInfo.cpu.v[15] == 0 );
+    }
 }

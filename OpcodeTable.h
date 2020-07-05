@@ -3,6 +3,7 @@
 #include "types.h"
 #include "SystemInformation.h"
 #include "opcode/Opcode.h"
+#include "opcode/BinaryOperation.h"
 
 #ifndef __opcode_table_h
 #define __opcode_table_h
