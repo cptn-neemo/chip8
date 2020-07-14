@@ -10,6 +10,18 @@ Display::~Display() {
     SDL_Quit();
 }
 
+std::vector<SDL_Event> Display::getKeyboardEvents() {
+    std::vector<SDL_Event> events;
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_KEYDOWN)
+            events.push_back(event);
+    }
+
+    return events;
+}
+
 void Display::initializeSDL() {
     int sdlInitCode = SDL_Init(SDL_INIT_VIDEO);
     if (sdlInitCode != 0) {

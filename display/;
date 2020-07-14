@@ -2,7 +2,6 @@
 #include <iostream>
 #include <memory>
 #include <functional>
-#include <vector>
 #include "SDLPointer.h"
 
 #ifndef __window_h
@@ -21,7 +20,7 @@ class Display {
         Display();
         ~Display();
         
-        std::vector<SDL_Event> getKeyboardEvents();
+        std::vector<SDL_Event> getEvents();
 
     private:
         void initializeSDL();
