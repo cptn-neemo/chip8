@@ -4,6 +4,8 @@
 #include "SystemInformation.h"
 #include "opcode/Opcode.h"
 #include "opcode/BinaryOperation.h"
+#include "opcode/UnaryOperation.h"
+#include <random>
 
 #ifndef __opcode_table_h
 #define __opcode_table_h
@@ -44,12 +46,15 @@ class OpcodeTable {
         void skipIfRegistersNotEqual(OPCODE);
         void setI(OPCODE);
         void jumpWithOffset(OPCODE);
+        void rand(OPCODE);
 
         void skipNextInstructionIf(bool);
-        void setRegister(unsigned char registerIndex, OPCODE value);
 
         SystemInformation *sysInfo;
         std::array<Routine, NUM_OPCODES> table;
+
+        std::mt19937 gen{100};
+        std::uniform_int_distribution<> distrib{0, 255}; 
 };
 
 #endif

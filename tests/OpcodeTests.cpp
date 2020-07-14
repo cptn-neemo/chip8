@@ -395,3 +395,18 @@ TEST_CASE("Jump to location with offset", "[jumpOffset]") {
 
     REQUIRE( sysInfo.cpu.ip == 0x155 );
 }
+
+TEST_CASE("Random", "[random]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0xC00F;
+    sysInfo.cpu.v[0] = 0x1;
+
+    // First three numbers of uniform distribution seeded with 100
+    // 139 171 71
+
+    table.executeOpcode(command);
+
+    REQUIRE ( sysInfo.cpu.v[0] == 0xB );
+}

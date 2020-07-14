@@ -31,6 +31,7 @@ void OpcodeTable::setupTable() {
     table[19] = &OpcodeTable::skipIfRegistersNotEqual;
     table[20] = &OpcodeTable::setI;
     table[21] = &OpcodeTable::jumpWithOffset;
+    table[22] = &OpcodeTable::rand;
 }
 
 void OpcodeTable::executeOpcode(OPCODE command) {
@@ -65,6 +66,8 @@ unsigned int OpcodeTable::getOpcodeTableIndex(OPCODE command) {
             return 20;
         case 0xB:
             return 21;
+        case 0xC:
+            return 22;
         default:
             throw std::out_of_range("Opcode index did not match any possibility.");
     }
@@ -115,24 +118,20 @@ void OpcodeTable::call(OPCODE command) {
 }
 
 void OpcodeTable::skipIfRegisterEqualToConstant(OPCODE command) {
-    // 3XNN 
-    unsigned char registerIndex = Opcode::getXRegister(command);
-    OPCODE registerValue = sysInfo->cpu.v[registerIndex];
-    OPCODE value = Opcode::getLastNQuadbits(command, 2);
+    UnaryOperation uop(sysInfo->cpu.v, command);
 
-    skipNextInstructionIf(registerValue == value);
+    skipNextInstructionIf(uop.getXValue() ==  uop.getNNValue());
 }
 
 void OpcodeTable::skipIfRegisterNotEqualToConstant(OPCODE command) {
-    unsigned char registerIndex = Opcode::getXRegister(command);
-    OPCODE registerValue = sysInfo->cpu.v[registerIndex];
-    OPCODE value = Opcode::getLastNQuadbits(command, 2);
+    UnaryOperation uop(sysInfo->cpu.v, command);
 
-    skipNextInstructionIf(registerValue != value);
+    skipNextInstructionIf(uop.getXValue() !=  uop.getNNValue());
 }
 
 void OpcodeTable::skipIfRegistersEqual(OPCODE command) {
     BinaryOperation bop(sysInfo->cpu.v, command);
+
     skipNextInstructionIf(bop.getXValue() == bop.getYValue());
 }
 
@@ -142,17 +141,15 @@ void OpcodeTable::skipNextInstructionIf(bool condition) {
 }
 
 void OpcodeTable::setRegisterToConstant(OPCODE command) {
-    unsigned char registerIndex = Opcode::getXRegister(command);
-    OPCODE constant = Opcode::getLastNQuadbits(command, 2);
-    setRegister(registerIndex, constant);
+    UnaryOperation uop(sysInfo->cpu.v, command);
+
+    uop.setXRegisterTo(uop.getNNValue());
 }
 
 void OpcodeTable::addConstantToRegister(OPCODE command) {
-    unsigned char registerIndex = Opcode::getXRegister(command);
-    OPCODE registerValue =
-        sysInfo->cpu.v[registerIndex];
-    OPCODE constant = Opcode::getLastNQuadbits(command, 2);
-    setRegister(registerIndex, registerValue + constant);
+    UnaryOperation uop(sysInfo->cpu.v, command);
+
+    uop.setXRegisterTo(uop.getXValue() + uop.getNNValue());
 }
 
 void OpcodeTable::set(OPCODE command) {
@@ -252,6 +249,9 @@ void OpcodeTable::jumpWithOffset(OPCODE command) {
     sysInfo->cpu.ip = startAddress + offset;
 }
 
-void OpcodeTable::setRegister(unsigned char registerIndex, OPCODE value) {
-    sysInfo->cpu.v[registerIndex] = value;
+void OpcodeTable::rand(OPCODE command) {
+    UnaryOperation uop(sysInfo->cpu.v, command);
+    unsigned int randomNumber = distrib(gen);
+
+    uop.setXRegisterTo(randomNumber & uop.getNNValue());
 }
