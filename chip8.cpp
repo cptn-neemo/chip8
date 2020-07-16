@@ -1,6 +1,6 @@
 #include "chip8.h"
 
-chip8::chip8(std::string programPath) {
+chip8::chip8(std::string programPath) : eventManager(registeredKeys, registeredEvents) {
     sysInfo.mem.fill(0);
     sysInfo.stack.fill(0);
     initDisplay();
@@ -45,17 +45,29 @@ unsigned short chip8::fetchOpcode(unsigned int memaddr) {
 
 void chip8::run() {
     while (true) {
-        std::vector<SDL_Event> events = eventManager.getEvents();
+        handleEvents();
 
-        if (events.size() > 0) {
-            for (SDL_Event& ev : events) {
-                if (ev.type == SDL_KEYDOWN)
-                    std::cout << "key down" << std::endl;
-                else
-                    std::cout << "key up" << std::endl;
+        if (quitFlag)
+            return;
+    }
+}
 
-                if (ev.type == SDL_QUIT)
-                    break;
+void chip8::handleEvents() {
+    std::vector<SDL_Event> events = eventManager.getEvents();
+
+    if (events.size() > 0) {
+        for (SDL_Event& event : events) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                quitFlag = true;
+                continue;
+            }
+
+            unsigned char keyIndex = convertKeyToIndex(event.key.keysym.sym);
+            
+            if (event.type == SDL_KEYDOWN) {
+                sysInfo.keys[keyIndex] = true;
+            } else if (event.type == SDL_KEYUP) {
+                sysInfo.keys[keyIndex] = false;
             }
         }
     }

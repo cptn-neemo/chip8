@@ -14,6 +14,7 @@
 #include "OpcodeTable.h"
 #include "display/Display.h"
 #include "display/EventManager.h"
+#include "display/KeyConverter.h"
 #include "types.h"
 #include "SystemInformation.h"
 
@@ -46,11 +47,41 @@ class chip8 {
         void initDisplay();
         void loadProgram(std::string &programPath);
         unsigned short fetchOpcode(unsigned int memaddr);
+        void handleEvents();
 
         SystemInformation sysInfo;
         OpcodeTable op{&sysInfo};
         Display window;
         EventManager eventManager;
+
+        bool quitFlag{false};
+
+        std::unordered_set<SDL_Keycode> registeredKeys {
+            SDLK_1,
+            SDLK_2,
+            SDLK_3,
+            SDLK_4,
+            SDLK_q,
+            SDLK_w,
+            SDLK_e,
+            SDLK_r,
+            SDLK_a,
+            SDLK_s,
+            SDLK_d,
+            SDLK_f,
+            SDLK_z,
+            SDLK_x,
+            SDLK_c,
+            SDLK_v,
+            SDLK_ESCAPE
+        };
+
+        std::unordered_set<SDL_EventType> registeredEvents {
+            SDL_KEYDOWN,
+            SDL_KEYUP,
+            SDL_QUIT
+        };
+
 };
 
 #endif
