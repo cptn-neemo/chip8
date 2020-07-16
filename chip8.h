@@ -13,6 +13,7 @@
 #include "cpu.h"
 #include "OpcodeTable.h"
 #include "display/Display.h"
+#include "display/EventManager.h"
 #include "types.h"
 #include "SystemInformation.h"
 
@@ -49,6 +50,7 @@ class chip8 {
         SystemInformation sysInfo;
         OpcodeTable op{&sysInfo};
         Display window;
+        EventManager eventManager;
 };
 
 #endif

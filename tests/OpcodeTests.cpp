@@ -410,3 +410,29 @@ TEST_CASE("Random", "[random]") {
 
     REQUIRE ( sysInfo.cpu.v[0] == 0xB );
 }
+
+TEST_CASE("Skip if key is pressed", "[skipIfKeyPressed]") {
+    SystemInformation sysInfo;
+    OpcodeTable table(&sysInfo);
+
+    const OPCODE command = 0xE09E;
+    sysInfo.cpu.ip = 0x200;
+
+    SECTION("Key is pressed, should skip") {
+        sysInfo.keys[4] = true;
+        sysInfo.cpu.v[0] = 0x4;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.ip == 0x202 );
+    }
+
+    SECTION("Key is not pressed, should not skip") {
+        sysInfo.keys[4] = false;
+        sysInfo.cpu.v[0] = 0x4;
+
+        table.executeOpcode(command);
+
+        REQUIRE( sysInfo.cpu.ip == 0x200 );
+    }
+}

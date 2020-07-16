@@ -8,7 +8,9 @@ chip8::chip8(std::string programPath) {
     run();
 }
 
-chip8::~chip8() { SDL_Quit(); }
+chip8::~chip8() {
+    SDL_Quit();
+}
 
 void chip8::initDisplay() {
     sysInfo.display.fill(0);
@@ -42,6 +44,21 @@ unsigned short chip8::fetchOpcode(unsigned int memaddr) {
 }
 
 void chip8::run() {
+    while (true) {
+        std::vector<SDL_Event> events = eventManager.getEvents();
+
+        if (events.size() > 0) {
+            for (SDL_Event& ev : events) {
+                if (ev.type == SDL_KEYDOWN)
+                    std::cout << "key down" << std::endl;
+                else
+                    std::cout << "key up" << std::endl;
+
+                if (ev.type == SDL_QUIT)
+                    break;
+            }
+        }
+    }
 }
 
 int main() {
